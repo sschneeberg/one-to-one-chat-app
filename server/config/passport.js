@@ -1,4 +1,5 @@
 // this set up followed from a previously created template
+const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const db = require('../models');
 
@@ -6,7 +7,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 
 const options = {};
-options.jwtFromReqeust = ExtractJwt.fromAuthHeaderAsBearerToken();
+options.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 options.secretOrKey = process.env.JWT_SECRET;
 options.passReqToCallback = true;
 

@@ -15,6 +15,17 @@ The project is broken down into a client and server folder, containing a React a
     - MONGO_URI
     - PORT (optional: will run on 3001 if not set in the .env)
 3. Seed your database with to confirm connection and set up test data. From inside server run `node seeders/userSeed.js` or from the root directory run `node server/seeders/userSeed.js`
+4. Test the server endpoints by running `mocha` inside the server directory
+
+## Routes
+
+| Method | Endpoint        | Request Expected          | Success Response Data | Access  |
+| ------ | --------------- | ------------------------- | --------------------- | ------- |
+| GET    | /welcome        | -                         | Message               | Public  |
+| GET    | /users/ping     | -                         | Message               | Public  |
+| POST   | /users/register | Password, Email, Username | Message, User         | Public  |
+| POST   | /users/login    | Password, Email           | Message, Bearer Token | Public  |
+| GET    | /chat/ping      | -                         | Message               | Private |
 
 ## Models
 
@@ -22,14 +33,13 @@ The app contains three simple models: Users, Messages, and Chats.
 
 ### Users
 
-The User model requires a username, password, and unique email. As users set up chat's an array of chat ids will be built to track their conversations.
+The User model requires a username, password, and unique email.
 
 ```js
 const userSchema = new Schema({
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    chats: [{ type: String }] // array of chat ids
+    password: { type: String, required: true }
 });
 ```
 
