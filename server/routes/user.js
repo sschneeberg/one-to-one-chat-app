@@ -47,3 +47,28 @@ router.post('/register', (req, res) => {
         })
         .catch((err) => res.json({ msg: 'error', error: err }));
 });
+
+// POST /users/login (Public) Login
+router.post('/login', (req, res) => {
+    // find user and check password
+    db.User.findOne({ email: req.body.email })
+        .then((user) => {
+            //if np user found, unauthorized
+            if (!user) res.status(401).json({ msg: 'User not found' });
+            //if user, check passwords
+            bcrypt.compare(req.body.password, user.password).then((isMatch) => {
+                if (!isMatch) res.status(401).json({ msg: 'Login information incorrect' });
+                // if passwords match, sign and send token
+                const payload = {
+                    email: user.email,
+                    id: user._id,
+                    username: user.username
+                };
+                jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
+                    if (err) res.json({ msg: 'error', error: err });
+                    res.status(200).json({ msg: 'Login sucessful', token: `Bearer ${token}` });
+                });
+            });
+        })
+        .catch((err) => res.json({ msg: 'error', error: err }));
+});
