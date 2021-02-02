@@ -5,4 +5,4 @@ const chatSchema = new Schema({
     members: [{ type: String }] // array of user id's
 });
 
-module.exports = chatSchema;
+module.exports = mongoose.model('Chat', chatSchema);

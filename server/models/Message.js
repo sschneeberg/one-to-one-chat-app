@@ -8,4 +8,4 @@ const messageSchema = new Schema({
     sent_at: { type: Date, required: true, default: new Date() }
 });
 
-module.exports = messageSchema;
+module.exports = mongoose.model('Message', messageSchema);
