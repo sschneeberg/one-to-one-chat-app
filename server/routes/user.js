@@ -71,11 +71,11 @@ router.post('/login', (req, res) => {
         .then((user) => {
             //if np user found, unauthorized
             if (!user) {
-                res.status(401).json({ msg: 'User not found' });
+                res.status(400).json({ msg: 'User not found' });
             } else {
                 //if user, check passwords
                 bcrypt.compare(req.body.password, user.password).then((isMatch) => {
-                    if (!isMatch) res.status(401).json({ msg: 'Login information incorrect' });
+                    if (!isMatch) res.status(400).json({ msg: 'Login information incorrect' });
                     // if passwords match, sign and send token
                     const payload = {
                         email: user.email,

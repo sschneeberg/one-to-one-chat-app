@@ -97,7 +97,7 @@ describe('User Routes', function () {
             request(app)
                 .post('/users/login')
                 .send({ email: 'badlogin@test.com', password: 'password' })
-                .expect(401)
+                .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'User not found', true);
@@ -109,7 +109,7 @@ describe('User Routes', function () {
             request(app)
                 .post('/users/login')
                 .send({ email: 'joe@test.com', password: 'wrongPassword' })
-                .expect(401)
+                .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Login information incorrect', true);
