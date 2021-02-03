@@ -34,11 +34,7 @@ router.post('/register', async (req, res, next) => {
                     email: req.body.email,
                     password: req.body.password
                 });
-                // hash password before saving
-                const salt = await bcrypt.genSalt(10);
-                const hash = await bcrypt.hash(req.body.password, salt);
-                newUser.password = hash;
-                const user = await newUser.save();
+                const user = await newUser.save(); // pre save hook will hash password
                 const payload = { id: user._id };
                 const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP });
                 res.cookie('jwt', token, { httpOnly: true, secure: false }) //false for dev environment
@@ -47,6 +43,7 @@ router.post('/register', async (req, res, next) => {
             }
         }
     } catch (err) {
+        console.log('REGISTER ERR', err);
         next(err);
     }
 });
