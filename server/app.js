@@ -11,7 +11,6 @@ const passport = require('passport');
 
 // Routers
 const indexRouter = require('./routes/index');
-const pingRouter = require('./routes/ping');
 const userRouter = require('./routes/user');
 const chatRouter = require('./routes/chat');
 
@@ -32,7 +31,6 @@ require('./config/passport')(passport);
 
 // Routers
 app.use('/', indexRouter);
-app.use('/ping', pingRouter);
 app.use('/users', userRouter);
 app.use('/chat', chatRouter);
 

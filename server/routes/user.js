@@ -16,7 +16,7 @@ router.get('/ping', (req, res) => {
 });
 
 // POST /users/register (Public) Signup
-router.post('/register', (req, res) => {
+router.post('/register', (req, res, next) => {
     // validate: username, password, email in request, password is 6+ characters
     if (!req.body.password || !req.body.username || !req.body.email) {
         res.status(400).json({ msg: 'Email, Username, and Password required' });
@@ -27,7 +27,7 @@ router.post('/register', (req, res) => {
         db.User.findOne({ email: req.body.email })
             .then((user) => {
                 if (user) {
-                    res.json({ msg: 'Email in use' });
+                    res.status(400).json({ msg: 'Email in use' });
                 } else {
                     const newUser = new db.User({
                         username: req.body.username,
@@ -36,36 +36,24 @@ router.post('/register', (req, res) => {
                     });
                     // hash password before saving
                     bcrypt.genSalt(10, (err1, salt) => {
-                        if (err1) {
-                            console.log(err1);
-                            res.json({ msg: 'error', error: err1 });
-                        }
+                        if (err1) next(err1);
                         bcrypt.hash(req.body.password, salt, (err2, hash) => {
-                            if (err2) {
-                                console.log(err2);
-                                res.json({ msg: 'error', error: err2 });
-                            }
+                            if (err2) next(err2);
                             newUser.password = hash;
                             newUser
                                 .save()
                                 .then((user) => res.status(201).json({ msg: 'User created', user: user }))
-                                .catch((err) => {
-                                    console.log(err);
-                                    res.json({ msg: 'error', error: err });
-                                });
+                                .catch((err) => next(err));
                         });
                     });
                 }
             })
-            .catch((err) => {
-                console.log(err);
-                res.json({ msg: 'error', error: err });
-            });
+            .catch((err) => next(err));
     }
 });
 
 // POST /users/login (Public) Login
-router.post('/login', (req, res) => {
+router.post('/login', (req, res, next) => {
     // given email, find user and check password
     db.User.findOne({ email: req.body.email })
         .then((user) => {
@@ -79,19 +67,13 @@ router.post('/login', (req, res) => {
                     // if passwords match, sign and send token
                     const payload = { id: user._id };
                     jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
-                        if (err) {
-                            console.log(err);
-                            res.json({ msg: 'error', error: err });
-                        }
+                        if (err) next(err);
                         res.status(200).json({ msg: 'Login sucessful', token: `Bearer ${token}` });
                     });
                 });
             }
         })
-        .catch((err) => {
-            console.log(err);
-            res.json({ msg: 'error', error: err });
-        });
+        .catch((err) => next(err));
 });
 
 module.exports = router;
