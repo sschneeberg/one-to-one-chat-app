@@ -57,6 +57,7 @@ describe('User Routes', function () {
             request(app)
                 .post('/users/register')
                 .send({ email: 'badregister@test.com', password: 'password' })
+                .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Email, Username, and Password required', true);
@@ -71,6 +72,7 @@ describe('User Routes', function () {
             request(app)
                 .post('/users/register')
                 .send({ email: 'badregister@test.com', password: 'pass', username: 'Short Password' })
+                .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Password must be at least 6 characters', true);

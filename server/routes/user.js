@@ -19,9 +19,9 @@ router.get('/ping', (req, res) => {
 router.post('/register', (req, res) => {
     // validate: username, password, email in request, password is 6+ characters
     if (!req.body.password || !req.body.username || !req.body.email) {
-        res.json({ msg: 'Email, Username, and Password required' });
+        res.status(400).json({ msg: 'Email, Username, and Password required' });
     } else if (req.body.password.length < 6) {
-        res.json({ msg: 'Password must be at least 6 characters' });
+        res.status(400).json({ msg: 'Password must be at least 6 characters' });
     } else {
         // emails must be unique: check db for existing
         db.User.findOne({ email: req.body.email })
@@ -77,11 +77,7 @@ router.post('/login', (req, res) => {
                 bcrypt.compare(req.body.password, user.password).then((isMatch) => {
                     if (!isMatch) res.status(400).json({ msg: 'Login information incorrect' });
                     // if passwords match, sign and send token
-                    const payload = {
-                        email: user.email,
-                        id: user._id,
-                        username: user.username
-                    };
+                    const payload = { id: user._id };
                     jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
                         if (err) {
                             console.log(err);
