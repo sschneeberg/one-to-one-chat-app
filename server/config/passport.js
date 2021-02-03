@@ -18,6 +18,8 @@ options.passReqToCallback = true;
 module.exports = (passport) => {
     passport.use(
         new JwtStrategy(options, (req, jwt_payload, done) => {
+            //if cookie expired, unauthorized
+            if (jwt_payload.exp < Date.now()) done(null, false, { msg: 'jwt expired' });
             // find user from id in payload
             db.User.findById(jwt_payload.id)
                 .then((user) => {
@@ -26,7 +28,7 @@ module.exports = (passport) => {
                         req.user = user;
                         return done(null, user);
                     } else {
-                        // no user in db
+                        // no user in db, unauthorized
                         return done(null, false);
                     }
                 })
