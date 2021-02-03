@@ -4,10 +4,14 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const db = require('../models');
 
 const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
+const cookieExtractor = (req) => {
+    const token = null;
+    if (req && req.cookies) token = req.cookies['jwt'];
+    return token;
+};
 
 const options = {};
-options.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+options.jwtFromRequest = cookieExtractor;
 options.secretOrKey = process.env.JWT_SECRET;
 options.passReqToCallback = true;
 

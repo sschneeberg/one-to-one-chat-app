@@ -30,7 +30,6 @@ describe('User Routes', function () {
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Signup sucessful', true);
-                    assert(response.body.token, true);
                     db.User.findOne({ email })
                         .then((user) => {
                             assert(user.username === 'Joe Schmoe', true);
