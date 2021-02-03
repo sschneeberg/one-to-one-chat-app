@@ -25,7 +25,7 @@ router.post('/register', (req, res, next) => {
     } else {
         // emails must be unique: check db for existing
         db.User.findOne({ email: req.body.email })
-            .then((user) => {
+            .then(async (user) => {
                 if (user) {
                     res.status(400).json({ msg: 'Email in use' });
                 } else {
@@ -35,17 +35,15 @@ router.post('/register', (req, res, next) => {
                         password: req.body.password
                     });
                     // hash password before saving
-                    bcrypt.genSalt(10, (err1, salt) => {
-                        if (err1) next(err1);
-                        bcrypt.hash(req.body.password, salt, (err2, hash) => {
-                            if (err2) next(err2);
-                            newUser.password = hash;
-                            newUser
-                                .save()
-                                .then((user) => res.status(201).json({ msg: 'User created', user: user }))
-                                .catch((err) => next(err));
-                        });
-                    });
+                    try {
+                        const salt = await bcrypt.genSalt(10);
+                        const hash = await bcrypt.hash(req.body.password, salt);
+                        newUser.password = hash;
+                        const user = await newUser.save();
+                        res.status(201).json({ msg: 'User created', user: user });
+                    } catch (err) {
+                        next(err);
+                    }
                 }
             })
             .catch((err) => next(err));
