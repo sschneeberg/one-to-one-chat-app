@@ -22,17 +22,16 @@ describe('User Routes', function () {
 
     describe('POST /users/register', function () {
         it('Should successfully create a user', function (done) {
+            const [email, password, username] = ['joe@test.com', 'password', 'Joe Schmoe'];
             request(app)
                 .post('/users/register')
-                .send({ email: 'joe@test.com', password: 'password', username: 'Joe Schmoe' })
+                .send({ email, password, username })
                 .expect(201)
                 .expect('Content-type', /json/)
                 .then((response) => {
-                    assert(response.body.msg === 'User created', true);
-                    assert(response.body.user.email === 'joe@test.com', true);
-                    assert(response.body.user.username === 'Joe Schmoe', true);
-                    assert(response.body.user.password !== 'password', true);
-                    db.User.findOne({ email: response.body.user.email })
+                    assert(response.body.msg === 'Signup sucessful', true);
+                    assert(response.body.token, true);
+                    db.User.findOne({ email })
                         .then((user) => {
                             assert(user.username === 'Joe Schmoe', true);
                             assert(user.password !== 'password', true);
@@ -43,9 +42,10 @@ describe('User Routes', function () {
                 .catch((err) => done(err));
         });
         it('Should not reuse an existing email', function (done) {
+            const [email, password, username] = ['joe@test.com', 'password', 'Joey Schmoey'];
             request(app)
                 .post('/users/register')
-                .send({ email: 'joe@test.com', password: 'password', username: 'Joey Schmoey' })
+                .send({ email, password, username })
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Email in use', true);
@@ -54,9 +54,10 @@ describe('User Routes', function () {
                 .catch((err) => done(err));
         });
         it('Should not create an account with missing requirements', function (done) {
+            const [email, password] = ['badregister@test.com', 'password'];
             request(app)
                 .post('/users/register')
-                .send({ email: 'badregister@test.com', password: 'password' })
+                .send({ email, password })
                 .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
@@ -69,9 +70,10 @@ describe('User Routes', function () {
                 .catch((err) => done(err));
         });
         it('Should not create an account with a short password', function (done) {
+            const [email, password, username] = ['badregister@test.com', 'pass', 'Short Password'];
             request(app)
                 .post('/users/register')
-                .send({ email: 'badregister@test.com', password: 'pass', username: 'Short Password' })
+                .send({ email, password, username })
                 .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
@@ -84,9 +86,10 @@ describe('User Routes', function () {
 
     describe('POST /users/login', function () {
         it('Should log in an existing user', function (done) {
+            const [email, password] = ['joe@test.com', 'password'];
             request(app)
                 .post('/users/login')
-                .send({ email: 'joe@test.com', password: 'password' })
+                .send({ email, password })
                 .expect(200)
                 .expect('Content-type', /json/)
                 .then((response) => {
@@ -96,9 +99,10 @@ describe('User Routes', function () {
                 .catch((err) => done(err));
         });
         it('Should reject a non existent user/incorrect email', function (done) {
+            const [email, password] = ['badlogin@test.com', 'password'];
             request(app)
                 .post('/users/login')
-                .send({ email: 'badlogin@test.com', password: 'password' })
+                .send({ email, password })
                 .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {
@@ -108,9 +112,10 @@ describe('User Routes', function () {
                 .catch((err) => done(err));
         });
         it('Should reject a wrong password', function (done) {
+            const [email, password] = ['joe@test.com', 'wrongPassword'];
             request(app)
                 .post('/users/login')
-                .send({ email: 'joe@test.com', password: 'wrongPassword' })
+                .send({ email, password })
                 .expect(400)
                 .expect('Content-type', /json/)
                 .then((response) => {

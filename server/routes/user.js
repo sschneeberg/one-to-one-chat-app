@@ -40,7 +40,11 @@ router.post('/register', (req, res, next) => {
                         const hash = await bcrypt.hash(req.body.password, salt);
                         newUser.password = hash;
                         const user = await newUser.save();
-                        res.status(201).json({ msg: 'User created', user: user });
+                        const payload = { id: user._id };
+                        jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP }, (err, token) => {
+                            if (err) next(err);
+                            res.status(201).json({ msg: 'Signup sucessful', token: `Bearer ${token}` });
+                        });
                     } catch (err) {
                         next(err);
                     }
@@ -64,7 +68,7 @@ router.post('/login', (req, res, next) => {
                     if (!isMatch) res.status(400).json({ msg: 'Login information incorrect' });
                     // if passwords match, sign and send token
                     const payload = { id: user._id };
-                    jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
+                    jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP }, (err, token) => {
                         if (err) next(err);
                         res.status(200).json({ msg: 'Login sucessful', token: `Bearer ${token}` });
                     });
