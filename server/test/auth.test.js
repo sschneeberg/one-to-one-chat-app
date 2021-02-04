@@ -1,7 +1,26 @@
 const request = require('supertest');
 const assert = require('assert');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const mongoose = require('mongoose');
 const app = require('../app');
-const db = require('../models');
+const User = require('../models/User');
+const mongodb = new MongoMemoryServer();
+const db = null;
+
+before(async function (done) {
+    try {
+        const uri = await mongodb.getUri();
+        mongoose.connect(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: true,
+            useCreateIndex: true
+        });
+        mongoose.connection.once('open', () => console.log(`Mongo Memory Server ${uri}`));
+    } catch (err) {
+        console.log(err);
+    }
+});
 
 describe('User Routes', function () {
     describe('GET /users/ping', function () {
@@ -30,7 +49,7 @@ describe('User Routes', function () {
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Signup sucessful', true);
-                    db.User.findOne({ email })
+                    User.findOne({ email })
                         .then((user) => {
                             assert(user.username === 'Joe Schmoe', true);
                             assert(user.password !== 'password', true);
@@ -61,7 +80,7 @@ describe('User Routes', function () {
                 .expect('Content-type', /json/)
                 .then((response) => {
                     assert(response.body.msg === 'Email, Username, and Password required', true);
-                    db.User.findOne({ email: 'badregister@test.com' }).then((user) => {
+                    User.findOne({ email: 'badregister@test.com' }).then((user) => {
                         assert(!user, true);
                         done();
                     });
