@@ -10,11 +10,6 @@ const router = express.Router();
 
 // Routes
 
-// GET /users/ping (Public)
-router.get('/ping', (req, res) => {
-    res.status(200).json({ msg: 'Connected to user router' });
-});
-
 // POST /users/register (Public) Signup
 router.post('/register', async (req, res, next) => {
     try {
@@ -71,7 +66,7 @@ router.post('/login', async (req, res, next) => {
             }
         }
     } catch (err) {
-        console.log(err);
+        console.log('LOGIN ERR', err);
         next(err);
     }
 });
@@ -83,6 +78,20 @@ router.get('/logout', (req, res) => {
         res.clearCookie['jwt'].status(200).json({ msg: 'Logout successful' });
     } else {
         res.status(400).json({ msg: 'Invalid Cookie' });
+    }
+});
+
+// POST /users (Private) Search -- FEELS LIKE THERE IS A BETTER WAY TO DO THIS, COME BACK TO HERE
+router.post('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+    try {
+        //find all users matching a searched string, best matches first
+        const users = await db.User.find({ $text: { $search: req.body.search } }).sort({
+            score: { $meta: 'textScore' }
+        });
+        res.status(200).json({ users: users });
+    } catch (err) {
+        console.log('GET USERS ERR', err);
+        next(err);
     }
 });
 

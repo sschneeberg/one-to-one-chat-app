@@ -8,6 +8,8 @@ const userSchema = new Schema({
     password: { type: String, required: true }
 });
 
+userSchema.index({ username: 'text' });
+
 userSchema.pre('save', async function (next) {
     // hash password before saving
     try {
