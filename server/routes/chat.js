@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const passport = require('passport');
 const db = require('../models');
+const Message = require('../models/Message');
 const router = express.Router();
 
 // Routes (Private)
@@ -48,6 +49,21 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 });
 
 // Until sockets:
-// POST messages
+// POST messages (Private)
+router.post('/:id/message', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+    try {
+        const newMsg = new Message({
+            chat_id: req.params.id,
+            sent_at: new Date(Date.now()),
+            content: req.body.content,
+            user_from: req.body.from
+        });
+        await newMsg.save();
+        res.status(201).json({ msg: 'Create successful' });
+    } catch (err) {
+        console.log('POST MSG ERR', err);
+        next(err);
+    }
+});
 
 module.exports = router;
