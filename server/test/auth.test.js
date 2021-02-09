@@ -1,26 +1,7 @@
 const request = require('supertest');
 const assert = require('assert');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongoose = require('mongoose');
 const app = require('../app');
 const User = require('../models/User');
-const mongodb = new MongoMemoryServer();
-const db = null;
-
-before(async function (done) {
-    try {
-        const uri = await mongodb.getUri();
-        mongoose.connect(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            useFindAndModify: true,
-            useCreateIndex: true
-        });
-        mongoose.connection.once('open', () => console.log(`Mongo Memory Server ${uri}`));
-    } catch (err) {
-        console.log(err);
-    }
-});
 
 describe('User Routes', function () {
     describe('GET /users/ping', function () {
