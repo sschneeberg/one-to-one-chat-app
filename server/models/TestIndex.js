@@ -2,6 +2,9 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 
 const mongodb = new MongoMemoryServer();
+
+//COME BACK TO THIS
+//IN PROGRESS: Cannot get db to connect before tests run even with a before hook, still connecting to local db
 mongodb.getUri().then((uri) => {
     mongoose.connect(uri, {
         useNewUrlParser: true,

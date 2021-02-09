@@ -30,7 +30,7 @@ router.post('/register', async (req, res, next) => {
                     password: req.body.password
                 });
                 const user = await newUser.save(); // pre save hook will hash password
-                const payload = { id: user._id };
+                const payload = { id: user._id, username: user.username };
                 const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP });
                 res.cookie('jwt', token, { httpOnly: true, secure: process.env.SECURE }) //false for dev environment
                     .status(201)
@@ -58,7 +58,7 @@ router.post('/login', async (req, res, next) => {
                 res.status(400).json({ msg: 'Login information incorrect' });
             } else {
                 // if passwords match, sign and send token
-                const payload = { id: user._id };
+                const payload = { id: user._id, username: user.username };
                 const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP });
                 res.cookie('jwt', token, { httpOnly: true, secure: process.env.SECURE })
                     .status(200)
@@ -81,12 +81,21 @@ router.get('/logout', (req, res) => {
     }
 });
 
-// POST /users (Private) Search -- FEELS LIKE THERE IS A BETTER WAY TO DO THIS, COME BACK TO HERE
-router.post('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+// get /users (Private) Search -- FEELS LIKE THERE IS A BETTER WAY TO DO THIS, COME BACK TO HERE
+router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
+        const searchTerm = rea.body.search.split('-').join(' '); //turn spaces to dashes on the front end to make url friendly
         //find all users matching a searched string, best matches first
-        const users = await db.User.find({ $text: { $search: req.body.search } }).sort({
+        const foundUsers = await db.User.find({ $text: { $search: searchTerm } }).sort({
             score: { $meta: 'textScore' }
+        });
+        // dont pass login information: username and id only
+        const users = [];
+        foundUsers.forEach((user) => {
+            users.push({
+                username: user.username,
+                id: user._id
+            });
         });
         res.status(200).json({ users: users });
     } catch (err) {
