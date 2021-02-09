@@ -37,9 +37,9 @@ router.post('/register', async (req, res, next) => {
                 const user = await newUser.save(); // pre save hook will hash password
                 const payload = { id: user._id };
                 const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP });
-                res.cookie('jwt', token, { httpOnly: true, secure: false }) //false for dev environment
+                res.cookie('jwt', token, { httpOnly: true, secure: process.env.SECURE }) //false for dev environment
                     .status(201)
-                    .json({ msg: 'Signup sucessful' });
+                    .json({ msg: 'Signup successful' });
             }
         }
     } catch (err) {
@@ -65,9 +65,9 @@ router.post('/login', async (req, res, next) => {
                 // if passwords match, sign and send token
                 const payload = { id: user._id };
                 const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXP });
-                res.cookie('jwt', token, { httpOnly: true, secure: false })
+                res.cookie('jwt', token, { httpOnly: true, secure: process.env.SECURE })
                     .status(200)
-                    .json({ msg: 'Login sucessful' });
+                    .json({ msg: 'Login successful' });
             }
         }
     } catch (err) {
@@ -80,7 +80,7 @@ router.post('/login', async (req, res, next) => {
 router.get('/logout', (req, res) => {
     //if cookie remove it
     if (req.cookies['jwt']) {
-        res.clearCookie['jwt'].status(200).json({ msg: 'Logout Successful' });
+        res.clearCookie['jwt'].status(200).json({ msg: 'Logout successful' });
     } else {
         res.status(400).json({ msg: 'Invalid Cookie' });
     }

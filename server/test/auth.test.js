@@ -48,7 +48,7 @@ describe('User Routes', function () {
                 .expect(201)
                 .expect('Content-type', /json/)
                 .then((response) => {
-                    assert(response.body.msg === 'Signup sucessful', true);
+                    assert(response.body.msg === 'Signup successful', true);
                     User.findOne({ email })
                         .then((user) => {
                             assert(user.username === 'Joe Schmoe', true);
@@ -111,7 +111,7 @@ describe('User Routes', function () {
                 .expect(200)
                 .expect('Content-type', /json/)
                 .then((response) => {
-                    assert(response.body.msg === 'Login sucessful', true);
+                    assert(response.body.msg === 'Login successful', true);
                     done();
                 })
                 .catch((err) => done(err));
