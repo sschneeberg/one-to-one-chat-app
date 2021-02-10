@@ -19,13 +19,16 @@ The project is broken down into a client and server folder, containing a React a
 
 ## Routes
 
-| Method | Endpoint        | Request Expected          | Success Response Data | Access  |
-| ------ | --------------- | ------------------------- | --------------------- | ------- |
-| GET    | /welcome        | -                         | Message               | Public  |
-| GET    | /users/ping     | -                         | Message               | Public  |
-| POST   | /users/register | Password, Email, Username | Message, User         | Public  |
-| POST   | /users/login    | Password, Email           | Message, Bearer Token | Public  |
-| GET    | /chat/ping      | -                         | Message               | Private |
+| Method | Endpoint        | Request Expected          | Success Response Data | Access  | Purpose                                           |
+| ------ | --------------- | ------------------------- | --------------------- | ------- | ------------------------------------------------- |
+| GET    | /welcome        | -                         | Message               | Public  |                                                   |
+| GET    | /users          | Search Term               | Users Array           | Private | Query users with username matching a given string |
+| POST   | /users/register | Password, Email, Username | Message               | Public  | Signup and login a user                           |
+| POST   | /users/login    | Password, Email           | Message               | Public  | Login in a user                                   |
+| GET    | /chats          | User id                   | Chats                 | Private | Query all conversations for the logged in user    |
+| GET    | /chats/:id      | -                         | Messages              | Private | Query all messages for a given chat               |
+| POST   | /chats          | Members                   | Message               | Private | Add a chat for the logged in user                 |
+| POST   | /chats/:id      | Content                   | Message               | Private | Add a message to a given chat                     |
 
 ## Models
 
