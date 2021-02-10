@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const db = require('../models');
 const JWT_SECRET = process.env.JWT_SECRET;
 const router = express.Router();
@@ -81,10 +82,10 @@ router.get('/logout', (req, res) => {
     }
 });
 
-// get /users (Private) Search -- FEELS LIKE THERE IS A BETTER WAY TO DO THIS, COME BACK TO HERE
+// get /users (Private) Search
 router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const searchTerm = rea.body.search.split('-').join(' '); //turn spaces to dashes on the front end to make url friendly
+        const searchTerm = req.query.search.split('-').join(' '); //turn spaces to dashes on the front end to make url friendly
         //find all users matching a searched string, best matches first
         const foundUsers = await db.User.find({ $text: { $search: searchTerm } }).sort({
             score: { $meta: 'textScore' }
@@ -97,7 +98,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), async (req, re
                 id: user._id
             });
         });
-        res.status(200).json({ users: users });
+        res.status(200).json({ users });
     } catch (err) {
         console.log('GET USERS ERR', err);
         next(err);

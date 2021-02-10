@@ -4,22 +4,6 @@ const app = require('../app');
 const User = require('../models/User');
 
 describe('User Routes', function () {
-    describe('GET /users/ping', function () {
-        it('Should return a 200 response', function (done) {
-            request(app).get('/users/ping').expect(200, done);
-        });
-        it('Should return a 200 response', function (done) {
-            request(app)
-                .get('/users/ping')
-                .expect('Content-Type', /json/)
-                .then((response) => {
-                    assert(response.body.msg === 'Connected to user router', true);
-                    done();
-                })
-                .catch((err) => done(err));
-        });
-    });
-
     describe('POST /users/register', function () {
         it('Should successfully create a user', function (done) {
             const [email, password, username] = ['joe@test.com', 'password', 'Joe Schmoe'];

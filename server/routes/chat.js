@@ -4,7 +4,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const passport = require('passport');
 const db = require('../models');
-const Message = require('../models/Message');
 const router = express.Router();
 
 // Routes (Private)
@@ -22,7 +21,7 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), async (req,
 });
 
 // GET messages -- where :id is chat id (Private)
-router.get('/:id', passprt.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/:id', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
         const messages = await db.Message.find({ where: { chat_id: req.params.id } }).sort({ sent_at: 'descending' });
         res.status(200).json({ messages: messages });
@@ -52,7 +51,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 // POST messages (Private)
 router.post('/:id/message', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const newMsg = new Message({
+        const newMsg = new db.Message({
             chat_id: req.params.id,
             sent_at: new Date(Date.now()),
             content: req.body.content,
