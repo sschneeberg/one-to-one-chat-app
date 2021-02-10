@@ -32,7 +32,7 @@ require('./config/passport')(passport);
 // Routers
 app.use('/', indexRouter);
 app.use('/users', userRouter);
-app.use('/chat', chatRouter);
+app.use('/chats', chatRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

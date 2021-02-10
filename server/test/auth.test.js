@@ -4,6 +4,10 @@ const app = require('../app');
 const User = require('../models/User');
 
 describe('User Routes', function () {
+    before(async () => {
+        await User.deleteMany({});
+    });
+
     describe('POST /users/register', function () {
         it('Should successfully create a user', function (done) {
             const [email, password, username] = ['joe@test.com', 'password', 'Joe Schmoe'];

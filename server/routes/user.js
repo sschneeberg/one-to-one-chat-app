@@ -83,6 +83,8 @@ router.get('/logout', (req, res) => {
 });
 
 // get /users (Private) Search
+//Current Idea: query db when user types 3 or 4 characters, return all matching users then filter on the front end as more characters are added
+//If the user backspaces to less than 3/4 characters, make another db call when character threshhold is hit for new search term (confirm on front end that search term is new)
 router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
         const searchTerm = req.query.search.split('-').join(' '); //turn spaces to dashes on the front end to make url friendly

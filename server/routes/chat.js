@@ -12,7 +12,7 @@ const router = express.Router();
 // GET chats -- where :id is user id (Private)
 router.get('/:id', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const chats = await db.Chat.find({ where: { 'members.id': req.params.id } });
+        const chats = await db.Chat.find({ 'members.id': req.params.id });
         res.status(200).json({ conversations: chats });
     } catch (err) {
         console.log('GET CHAT ERR', err);
@@ -23,7 +23,7 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), async (req,
 // GET messages -- where :id is chat id (Private)
 router.get('/:id', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const messages = await db.Message.find({ where: { chat_id: req.params.id } }).sort({ sent_at: 'descending' });
+        const messages = await db.Message.find({ chat_id: req.params.id }).sort({ sent_at: 'descending' });
         res.status(200).json({ messages: messages });
     } catch (err) {
         console.log('GET MSGS ERR', err);

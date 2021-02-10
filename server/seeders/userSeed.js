@@ -3,12 +3,16 @@ const bcrypt = require('bcrypt');
 
 let seedPassword = 'password';
 
-bcrypt.genSalt(10, (err1, salt) => {
-    if (err1) throw err1;
-    bcrypt.hash(seedPassword, salt, (err2, hash) => {
-        if (err2) throw err2;
+const runSeed = async () => {
+    try {
+        await db.User.deleteMany({});
+        await db.Chat.deleteMany({});
+        await db.Message.deleteMany({});
+
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(seedPassword, salt);
         seedPassword = hash;
-        db.User.insertMany([
+        const createdUsers = await db.User.insertMany([
             {
                 username: 'John Smith',
                 email: 'jsmith@test1.com',
@@ -29,11 +33,75 @@ bcrypt.genSalt(10, (err1, salt) => {
                 email: 'mary.jane@test.com',
                 password: seedPassword
             }
-        ])
-            .then((createdUsers) => {
-                console.log('SEED SUCCESSFUL');
-                console.log(createdUsers);
-            })
-            .catch((err) => console.log(err));
-    });
-});
+        ]);
+        const createdChats = await db.Chat.insertMany([
+            {
+                members: [
+                    { id: createdUsers[0]._id, username: createdUsers[0].username },
+                    { id: createdUsers[2]._id, username: createdUsers[2].username }
+                ]
+            },
+            {
+                members: [
+                    { id: createdUsers[1]._id, username: createdUsers[1].username },
+                    { id: createdUsers[3]._id, username: createdUsers[3].username }
+                ]
+            },
+            {
+                members: [
+                    { id: createdUsers[3]._id, username: createdUsers[3].username },
+                    { id: createdUsers[2]._id, username: createdUsers[2].username }
+                ]
+            }
+        ]);
+        const createdMessages = await db.Message.insertMany([
+            {
+                content: 'Hello world',
+                user_from: createdUsers[0]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[0]._id
+            },
+            {
+                content: 'Hello back',
+                user_from: createdUsers[2]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[0]._id
+            },
+            {
+                content: 'Goodnight world',
+                user_from: createdUsers[3]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[1]._id
+            },
+            {
+                content: 'Goodnight Moon',
+                user_from: createdUsers[3]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[1]._id
+            },
+            {
+                content: 'Goodnight Rabbit',
+                user_from: createdUsers[1]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[1]._id
+            },
+            {
+                content: 'Goodnight Spoon',
+                user_from: createdUsers[3]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[1]._id
+            },
+            {
+                content: 'Hello!',
+                user_from: createdUsers[2]._id,
+                sent_at: new Date(),
+                chat_id: createdChats[2]._id
+            }
+        ]);
+        return [createdUsers, createdChats];
+    } catch (err) {
+        console.log('SEED ERR', err);
+    }
+};
+
+module.exports = runSeed;
