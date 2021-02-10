@@ -3,7 +3,6 @@ const assert = require('assert');
 const app = require('../app');
 const db = require('../models');
 const runSeed = require('../seeders/userSeed');
-const { response } = require('express');
 
 describe('Chat Routes', () => {
     let cookie = '';
@@ -36,6 +35,10 @@ describe('Chat Routes', () => {
                 .expect('Content-Type', /json/)
                 .expect(200, done);
         });
+        it('Should reject an unauthorized user', (done) => {
+            const searchTerm = 'joe';
+            request(app).get('/users').query({ search: searchTerm }).expect(401, done);
+        });
         it('Should return all users matching the search term', (done) => {
             const searchTerm = 'joe';
             request(app)
@@ -66,10 +69,6 @@ describe('Chat Routes', () => {
                 })
                 .catch((err) => done(err));
         });
-        it('Should deny an unauthorized user', (done) => {
-            const searchTerm = 'joe';
-            request(app).get('/users').query({ search: searchTerm }).expect(401, done);
-        });
     });
 
     describe('GET /chats', () => {
@@ -81,7 +80,7 @@ describe('Chat Routes', () => {
                 .expect('Content-Type', /json/)
                 .expect(200, done);
         });
-        it('Should deny an unauthorized user', (done) => {
+        it('Should reject an unauthorized user', (done) => {
             request(app)
                 .get('/chats')
                 .query({ id: `${id}` })
@@ -109,7 +108,7 @@ describe('Chat Routes', () => {
                 .expect('Content-Type', /json/)
                 .expect(200, done);
         });
-        it('Should reject and unauthorized user', (done) => {
+        it('Should reject an unauthorized user', (done) => {
             request(app).get(`/chats/${seedChats[1]._id}`).expect(401, done);
         });
         it('Should reject a search for chats the user is not a part of', (done) => {
@@ -128,6 +127,59 @@ describe('Chat Routes', () => {
                     done();
                 })
                 .catch((err) => done(err));
+        });
+    });
+
+    describe('POST /chats', () => {
+        it('Should successfully create a chat for the user', (done) => {
+            request(app)
+                .post('/chats')
+                .send({ members: [{ id: seedUsers[0]._id, username: seedUsers[0].username }] })
+                .set('cookie', cookie)
+                .expect('Content-Type', /json/)
+                .expect(201)
+                .then(async (response) => {
+                    assert(response.body.msg === 'Create successful', true);
+                    const chat = await db.Chat.findOne({ _id: response.body.chat });
+                    assert(chat.members[0].id === id.toString() || chat.members[1].id === id.toString(), true);
+                    done();
+                })
+                .catch((err) => done(err));
+        });
+        it('Should reject an unauthorized user', (done) => {
+            request(app)
+                .post('/chats')
+                .send({ members: [{ id: seedUsers[0]._id, username: seedUsers[0].username }] })
+                .expect(401, done);
+        });
+    });
+
+    describe('POST /chats/:id', () => {
+        it('Should reject an unauthorized user', (done) => {
+            request(app).post(`/chats/${seedChats[1]._id}`).send({ content: 'And the red balloon' }).expect(401, done);
+        });
+        it('Should successfully add a message to the given chat for a user', (done) => {
+            request(app)
+                .post(`/chats/${seedChats[1]._id}`)
+                .send({ content: 'And the red balloon' })
+                .set('cookie', cookie)
+                .then(async (response) => {
+                    assert(response.body.msg === 'Create successful', true);
+                    const message = await db.Message.findOne({
+                        chat_id: seedChats[1]._id,
+                        content: 'And the red balloon'
+                    });
+                    assert(message.user_from === id.toString(), true);
+                    done();
+                })
+                .catch((err) => done(err));
+        });
+        it('Should not post to a chat the user is not in', (done) => {
+            request(app)
+                .post(`/chats/${seedChats[0]._id}`)
+                .send({ content: 'And the red balloon' })
+                .set('cookie', cookie)
+                .expect(401, done);
         });
     });
 });

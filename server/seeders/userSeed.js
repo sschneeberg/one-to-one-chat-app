@@ -68,7 +68,7 @@ const runSeed = async () => {
                 chat_id: createdChats[0]._id
             },
             {
-                content: 'Goodnight world',
+                content: 'Goodnight room',
                 user_from: createdUsers[3]._id,
                 sent_at: new Date(),
                 chat_id: createdChats[1]._id
@@ -80,13 +80,13 @@ const runSeed = async () => {
                 chat_id: createdChats[1]._id
             },
             {
-                content: 'Goodnight Rabbit',
+                content: 'Goodnight cow jumpin over the moon',
                 user_from: createdUsers[1]._id,
                 sent_at: new Date(),
                 chat_id: createdChats[1]._id
             },
             {
-                content: 'Goodnight Spoon',
+                content: 'Goodnight light',
                 user_from: createdUsers[3]._id,
                 sent_at: new Date(),
                 chat_id: createdChats[1]._id

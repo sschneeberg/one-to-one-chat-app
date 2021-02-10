@@ -45,7 +45,8 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), async (req,
 router.post('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
         // chatMembers given to backend as [{id: id, username: username}, {},...] for each member in new chat
-        const chatMembers = req.body.members.push({ id: req.user.id, username: req.user.username }); // add in current user
+        const chatMembers = req.body.members;
+        chatMembers.push({ id: req.user.id, username: req.user.username }); // add in current user
         const newChat = new db.Chat({
             members: chatMembers
         });
@@ -59,16 +60,21 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 
 // Until sockets:
 // POST messages (Private)
-router.post('/:id/message', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.post('/:id', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const newMsg = new db.Message({
-            chat_id: req.params.id,
-            sent_at: new Date(Date.now()),
-            content: req.body.content,
-            user_from: req.body.from
-        });
-        await newMsg.save();
-        res.status(201).json({ msg: 'Create successful' });
+        const chat = await db.Chat.findOne({ _id: req.params.id, 'members.id': req.user.id });
+        if (chat) {
+            const newMsg = new db.Message({
+                chat_id: req.params.id,
+                sent_at: new Date(),
+                content: req.body.content,
+                user_from: req.user.id
+            });
+            await newMsg.save();
+            res.status(201).json({ msg: 'Create successful' });
+        } else {
+            res.sendStatus(401);
+        }
     } catch (err) {
         console.log('POST MSG ERR', err);
         next(err);
