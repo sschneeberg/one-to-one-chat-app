@@ -10,10 +10,15 @@ const router = express.Router();
 // Shouldn't be able to access chat information without logged in user
 
 // GET chats -- where :id is user id (Private)
-router.get('/:id', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const chats = await db.Chat.find({ 'members.id': req.params.id });
-        res.status(200).json({ conversations: chats });
+        if (req.user.id !== req.query.id) {
+            //cannot get chats the user is not in
+            res.sendStatus(401);
+        } else {
+            const chats = await db.Chat.find({ 'members.id': req.query.id });
+            res.status(200).json({ conversations: chats });
+        }
     } catch (err) {
         console.log('GET CHAT ERR', err);
         next(err);
@@ -23,8 +28,13 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), async (req,
 // GET messages -- where :id is chat id (Private)
 router.get('/:id', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
-        const messages = await db.Message.find({ chat_id: req.params.id }).sort({ sent_at: 'descending' });
-        res.status(200).json({ messages: messages });
+        const chat = await db.Chat.findOne({ _id: req.params.id, 'members.id': req.user.id });
+        if (chat) {
+            const messages = await db.Message.find({ chat_id: req.params.id }).sort({ sent_at: 'descending' });
+            res.status(200).json({ messages: messages });
+        } else {
+            res.sendStatus(401);
+        }
     } catch (err) {
         console.log('GET MSGS ERR', err);
         next(err);

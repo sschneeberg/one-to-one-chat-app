@@ -3,6 +3,7 @@ const assert = require('assert');
 const app = require('../app');
 const db = require('../models');
 const runSeed = require('../seeders/userSeed');
+const { response } = require('express');
 
 describe('Chat Routes', () => {
     let cookie = '';
@@ -71,16 +72,25 @@ describe('Chat Routes', () => {
         });
     });
 
-    describe('GET /chats/:id (where id is user id)', () => {
+    describe('GET /chats', () => {
         it('Should return a 200 json response', (done) => {
-            request(app).get(`/chats/${id}`).set('cookie', cookie).expect('Content-Type', /json/).expect(200, done);
+            request(app)
+                .get('/chats')
+                .set('cookie', cookie)
+                .query({ id: `${id}` })
+                .expect('Content-Type', /json/)
+                .expect(200, done);
         });
         it('Should deny an unauthorized user', (done) => {
-            request(app).get(`/chats/${id}`).expect(401, done);
+            request(app)
+                .get('/chats')
+                .query({ id: `${id}` })
+                .expect(401, done);
         });
         it('Should find all chats for a given user', (done) => {
             request(app)
-                .get(`/chats/${id}`)
+                .get('/chats')
+                .query({ id: `${id}` })
                 .set('cookie', cookie)
                 .then(async (response) => {
                     const chats = await db.Chat.find({ 'members.id': id });
@@ -89,12 +99,32 @@ describe('Chat Routes', () => {
                 })
                 .catch((err) => done(err));
         });
-        it('Should return an empty array when no chats are found', (done) => {
+    });
+
+    describe('GET /chats/:id (where id is a chat id', () => {
+        it('Should return a 200 json response', (done) => {
             request(app)
-                .get('/chats/4')
+                .get(`/chats/${seedChats[1]._id}`)
                 .set('cookie', cookie)
-                .then((response) => {
-                    assert(response.body.conversations.length === 0, true);
+                .expect('Content-Type', /json/)
+                .expect(200, done);
+        });
+        it('Should reject and unauthorized user', (done) => {
+            request(app).get(`/chats/${seedChats[1]._id}`).expect(401, done);
+        });
+        it('Should reject a search for chats the user is not a part of', (done) => {
+            request(app).get(`/chats/${seedChats[0]._id}`).set('cookie', cookie).expect(401, done);
+        });
+        it('Should return all the messages for a given chat in a date-sorted order', (done) => {
+            request(app)
+                .get(`/chats/${seedChats[1]._id}`)
+                .set('cookie', cookie)
+                .then(async (response) => {
+                    const msgs = await db.Message.find({ chat_id: seedChats[1]._id }).sort({ sent_at: 'descending' });
+                    assert(msgs.length === response.body.messages.length, true);
+                    for (let i = 0; i < msgs.length; i++) {
+                        assert(msgs[i]._id.toString() === response.body.messages[i]._id, true);
+                    }
                     done();
                 })
                 .catch((err) => done(err));

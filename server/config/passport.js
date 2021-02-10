@@ -27,7 +27,7 @@ module.exports = (passport) => {
                 .then((user) => {
                     if (user) {
                         //user found, return user
-                        req.user = user;
+                        req.user = { id: user._id };
                         return done(null, user);
                     } else {
                         // no user in db, unauthorized
