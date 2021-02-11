@@ -6,7 +6,7 @@ const memberSchema = new Schema(
         id: { type: String, index: true },
         username: { type: String }
     },
-    { autoIndex: false }
+    { autoIndex: false, _id: false }
 );
 
 const chatSchema = new Schema({

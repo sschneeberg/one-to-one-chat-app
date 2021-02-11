@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const passport = require('passport');
 const db = require('../models');
+const idSort = require('../middleware/idSort');
 const router = express.Router();
 
 // Routes (Private)
@@ -45,13 +46,19 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), async (req,
 router.post('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
         // chatMembers given to backend as [{id: id, username: username}, {},...] for each member in new chat
-        const chatMembers = req.body.members;
+        let chatMembers = req.body.members;
         chatMembers.push({ id: req.user.id, username: req.user.username }); // add in current user
-        const newChat = new db.Chat({
-            members: chatMembers
-        });
-        const chat = await newChat.save();
-        res.status(201).json({ msg: 'Create successful', chat: chat.id });
+        chatMembers = idSort(chatMembers); // sort so we can look for an exact match to check if duplciating
+        const isExsiting = await db.Chat.findOne({ members: chatMembers });
+        if (isExsiting) {
+            res.status(400).json({ msg: 'Chat already exists' });
+        } else {
+            const newChat = new db.Chat({
+                members: chatMembers
+            });
+            const chat = await newChat.save();
+            res.status(201).json({ msg: 'Create successful', chat: chat.id });
+        }
     } catch (err) {
         console.log('POST CHAT ERR', err);
         next(err);

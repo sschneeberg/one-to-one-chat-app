@@ -146,6 +146,14 @@ describe('Chat Routes', () => {
                 })
                 .catch((err) => done(err));
         });
+        it('Should not create a duplicate chat', (done) => {
+            request(app)
+                .post('/chats')
+                .send({ members: [{ id: seedUsers[0]._id, username: seedUsers[0].username }] })
+                .set('cookie', cookie)
+                .expect('Content-Type', /json/)
+                .expect(400, done);
+        });
         it('Should reject an unauthorized user', (done) => {
             request(app)
                 .post('/chats')
