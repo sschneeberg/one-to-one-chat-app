@@ -5,7 +5,7 @@ const db = require('../models');
 
 const JwtStrategy = require('passport-jwt').Strategy;
 const cookieExtractor = (req) => {
-    const token = null;
+    let token = null;
     if (req && req.cookies) token = req.cookies['jwt'];
     return token;
 };
@@ -19,13 +19,15 @@ module.exports = (passport) => {
     passport.use(
         new JwtStrategy(options, (req, jwt_payload, done) => {
             //if cookie expired, unauthorized
-            if (jwt_payload.exp < Date.now()) done(null, false, { msg: 'jwt expired' });
+            if (jwt_payload.exp > Date.now()) {
+                return done(null, false, { msg: 'jwt expired' });
+            }
             // find user from id in payload
             db.User.findById(jwt_payload.id)
                 .then((user) => {
                     if (user) {
                         //user found, return user
-                        req.user = user;
+                        req.user = { id: user._id };
                         return done(null, user);
                     } else {
                         // no user in db, unauthorized

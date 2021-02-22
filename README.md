@@ -1,13 +1,14 @@
-# MERN Stack 1:1 Chat App
+# MERN Stack 1:1 Chat Application
 
 This application is built using React, Material-UI, React-Router, Node, & Express.js.
 
-## Installation
-
 Fork and clone this repository to your local machine to test and run the app. This app is not currently deployed.
-The project is broken down into a client and server folder, containing a React app and an Express app resppectively.
+The project is broken down into a client and server folder, containing a React app and an Express app respectively.
+At this point in time, the client is a basic react app that remains to be built out.
 
-### Setting up Server:
+# Server
+
+## Installation
 
 1. In terminal, `cd` into the server directory and run `npm install` to grab the required dependencies
 2. Create your `.env` file with the following variables:
@@ -19,13 +20,16 @@ The project is broken down into a client and server folder, containing a React a
 
 ## Routes
 
-| Method | Endpoint        | Request Expected          | Success Response Data | Access  |
-| ------ | --------------- | ------------------------- | --------------------- | ------- |
-| GET    | /welcome        | -                         | Message               | Public  |
-| GET    | /users/ping     | -                         | Message               | Public  |
-| POST   | /users/register | Password, Email, Username | Message, User         | Public  |
-| POST   | /users/login    | Password, Email           | Message, Bearer Token | Public  |
-| GET    | /chat/ping      | -                         | Message               | Private |
+| Method | Endpoint        | Request Expected          | Success Response Data | Access  | Purpose                                           |
+| ------ | --------------- | ------------------------- | --------------------- | ------- | ------------------------------------------------- |
+| GET    | /welcome        | -                         | Message               | Public  |                                                   |
+| GET    | /users          | Search Term               | Users Array           | Private | Query users with username matching a given string |
+| POST   | /users/register | Password, Email, Username | Message               | Public  | Signup and login a user                           |
+| POST   | /users/login    | Password, Email           | Message               | Public  | Login in a user                                   |
+| GET    | /chats          | User id                   | Chats                 | Private | Query all conversations for the logged in user    |
+| GET    | /chats/:id      | -                         | Messages              | Private | Query all messages for a given chat               |
+| POST   | /chats          | Members                   | Message               | Private | Add a chat for the logged in user                 |
+| POST   | /chats/:id      | Content                   | Message               | Private | Add a message to a given chat                     |
 
 ## Models
 
@@ -33,14 +37,18 @@ The app contains three simple models: Users, Messages, and Chats.
 
 ### Users
 
-The User model requires a username, password, and unique email.
+The User model requires a username, password, and unique email. Before saving, the password is hashed and a search tag is created to help with fuzzy/partial searching. An index is created on `searchTag` to allow for `$text` queries.
 
 ```js
-const userSchema = new Schema({
-    username: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
-});
+const userSchema = new Schema(
+    {
+        username: { type: String, required: true, minLength: 3 },
+        searchTag: { type: String, maxLength: 3 },
+        email: { type: String, required: true, unique: true },
+        password: { type: String, required: true }
+    },
+    { autoIndex: false }
+);
 ```
 
 ### Messages
@@ -58,10 +66,18 @@ const messageSchema = new Schema({
 
 ### Chats
 
-The Chat model collects the users belonging to each chat. While the intention of this app is a 1:1 messaging system, this could allow for future integration of group messaging.
+The Chat model collects the users belonging to each chat. While the intention of this app is a 1:1 messaging system, this could allow for future integration of group messaging. An index is created on the user id to make it more efficient to search the chats for the ones a user belongs to.
 
 ```js
+const memberSchema = new Schema(
+    {
+        id: { type: String, index: true },
+        username: { type: String }
+    },
+    { autoIndex: false, _id: false }
+);
+
 const chatSchema = new Schema({
-    members: [{ type: String }] // array of user id's
+    members: [memberSchema]
 });
 ```

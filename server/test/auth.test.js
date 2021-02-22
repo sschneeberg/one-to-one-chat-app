@@ -1,42 +1,11 @@
 const request = require('supertest');
 const assert = require('assert');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongoose = require('mongoose');
 const app = require('../app');
 const User = require('../models/User');
-const mongodb = new MongoMemoryServer();
-const db = null;
-
-before(async function (done) {
-    try {
-        const uri = await mongodb.getUri();
-        mongoose.connect(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            useFindAndModify: true,
-            useCreateIndex: true
-        });
-        mongoose.connection.once('open', () => console.log(`Mongo Memory Server ${uri}`));
-    } catch (err) {
-        console.log(err);
-    }
-});
 
 describe('User Routes', function () {
-    describe('GET /users/ping', function () {
-        it('Should return a 200 response', function (done) {
-            request(app).get('/users/ping').expect(200, done);
-        });
-        it('Should return a 200 response', function (done) {
-            request(app)
-                .get('/users/ping')
-                .expect('Content-Type', /json/)
-                .then((response) => {
-                    assert(response.body.msg === 'Connected to user router', true);
-                    done();
-                })
-                .catch((err) => done(err));
-        });
+    before(async () => {
+        await User.deleteMany({});
     });
 
     describe('POST /users/register', function () {
@@ -51,8 +20,9 @@ describe('User Routes', function () {
                     assert(response.body.msg === 'Signup successful', true);
                     User.findOne({ email })
                         .then((user) => {
-                            assert(user.username === 'Joe Schmoe', true);
-                            assert(user.password !== 'password', true);
+                            assert(user.username === username, true);
+                            assert(user.password !== password, true);
+                            assert(user.searchTag === username.slice(0, 3).toLowerCase(), true);
                             done();
                         })
                         .catch((err) => done(err));
