@@ -13,7 +13,9 @@ At this point in time, the client is a basic react app that remains to be built 
 1. In terminal, `cd` into the server directory and run `npm install` to grab the required dependencies
 2. Create your `.env` file with the following variables:
     - JWT_SECRET
+    - JWT_EXP
     - MONGO_URI
+    - SECURE (set to false for development)
     - PORT (optional: will run on 3001 if not set in the .env)
 3. Seed your database with to confirm connection and set up test data. From inside server run `node seeders/userSeed.js` or from the root directory run `node server/seeders/userSeed.js`
 4. Test the server endpoints by running `mocha` inside the server directory
