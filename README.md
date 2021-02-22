@@ -18,7 +18,12 @@ At this point in time, the client is a basic react app that remains to be built 
     - SECURE (set to false for development)
     - PORT (optional: will run on 3001 if not set in the .env)
 3. Seed your database with to confirm connection and set up test data. From inside server run `node seeders/userSeed.js` or from the root directory run `node server/seeders/userSeed.js`
-4. Test the server endpoints by running `mocha` inside the server directory
+
+## Testing
+
+Test the server endpoints by running `mocha` inside the server directory. There are two test files with a total of 24 tests dividede between the authentication routes and the chat routes. To just test authentication run `mocha test/auth.test.js`; to just test chat functionality run `mocha test/chat.test.js`.
+
+**_Please note:_ These tests will wipe and seed the connected database when executed. Make sure you are connected to a test database before running.**
 
 ## Routes
 
