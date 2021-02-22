@@ -90,3 +90,9 @@ const chatSchema = new Schema({
 ```
 
 # Client
+
+## Installation
+
+## Testing
+
+## Views
