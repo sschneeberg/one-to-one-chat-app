@@ -27,7 +27,7 @@ describe('Chat Routes', () => {
 
     describe('GET /users', () => {
         it('Should return a 200 json response', (done) => {
-            const searchTerm = 'joe';
+            const searchTerm = 'Mar';
             request(app)
                 .get('/users')
                 .query({ search: searchTerm })
@@ -36,17 +36,17 @@ describe('Chat Routes', () => {
                 .expect(200, done);
         });
         it('Should reject an unauthorized user', (done) => {
-            const searchTerm = 'joe';
+            const searchTerm = 'Mar';
             request(app).get('/users').query({ search: searchTerm }).expect(401, done);
         });
         it('Should return all users matching the search term', (done) => {
-            const searchTerm = 'joe';
+            const searchTerm = 'Mar';
             request(app)
                 .get('/users')
                 .query({ search: searchTerm })
                 .set('cookie', cookie)
                 .then(async (response) => {
-                    const matchedUsers = await db.User.find({ $text: { $search: searchTerm } }).sort({
+                    const matchedUsers = await db.User.find({ $text: { $search: searchTerm.toLowerCase() } }).sort({
                         score: { $meta: 'textScore' }
                     });
                     assert(matchedUsers.length === response.body.users.length, true);
@@ -58,7 +58,7 @@ describe('Chat Routes', () => {
                 .catch((err) => done(err));
         });
         it('Should return an empty array if no users found', (done) => {
-            const searchTerm = 'no match in db';
+            const searchTerm = 'non';
             request(app)
                 .get('/users')
                 .query({ search: searchTerm.split(' ').join('-') })

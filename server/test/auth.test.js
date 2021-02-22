@@ -20,8 +20,9 @@ describe('User Routes', function () {
                     assert(response.body.msg === 'Signup successful', true);
                     User.findOne({ email })
                         .then((user) => {
-                            assert(user.username === 'Joe Schmoe', true);
-                            assert(user.password !== 'password', true);
+                            assert(user.username === username, true);
+                            assert(user.password !== password, true);
+                            assert(user.searchTag === username.slice(0, 3).toLowerCase(), true);
                             done();
                         })
                         .catch((err) => done(err));

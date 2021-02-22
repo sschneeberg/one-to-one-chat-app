@@ -15,21 +15,25 @@ const runSeed = async () => {
         const createdUsers = await db.User.insertMany([
             {
                 username: 'John Smith',
+                searchTag: 'jon',
                 email: 'jsmith@test1.com',
                 password: seedPassword
             },
             {
                 username: 'John Smith',
+                searchTag: 'jon',
                 email: 'jsmith@test2.com',
                 password: seedPassword
             },
             {
                 username: 'Jane Doe',
+                searchTag: 'jan',
                 email: 'janedoe@test.com',
                 password: seedPassword
             },
             {
                 username: 'Mary Jane',
+                searchTag: 'mar',
                 email: 'mary.jane@test.com',
                 password: seedPassword
             }

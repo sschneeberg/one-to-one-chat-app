@@ -19,6 +19,8 @@ router.post('/register', async (req, res, next) => {
             res.status(400).json({ msg: 'Email, Username, and Password required' });
         } else if (req.body.password.length < 6) {
             res.status(400).json({ msg: 'Password must be at least 6 characters' });
+        } else if (req.body.username.length < 3) {
+            res.status(400).json({ msg: 'Username must be at least 3 characters' });
         } else {
             // emails must be unique: check db for existing
             const user = await db.User.findOne({ email: req.body.email });
@@ -88,19 +90,18 @@ router.get('/logout', (req, res) => {
 router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
     try {
         const searchTerm = req.query.search.split('-').join(' '); //turn spaces to dashes on the front end to make url friendly
-        //find all users matching a searched string, best matches first
-        const foundUsers = await db.User.find({ $text: { $search: searchTerm } }).sort({
-            score: { $meta: 'textScore' }
-        });
-        // dont pass login information: username and id only
-        const users = [];
-        foundUsers.forEach((user) => {
-            users.push({
-                username: user.username,
-                id: user._id
-            });
-        });
-        res.status(200).json({ users });
+        if (searchTerm.length !== 3) {
+            res.status(400).json({ msg: 'invalid search term, must be 3 characters' });
+        } else {
+            //find all users matching a searched string, best matches first
+            const users = await db.User.find({ $text: { $search: searchTerm.toLowerCase() } })
+                .select({ username: 1, _id: 1 })
+                .sort({
+                    score: { $meta: 'textScore' }
+                });
+            // dont pass login information: username and id only
+            res.status(200).json({ users });
+        }
     } catch (err) {
         console.log('GET USERS ERR', err);
         next(err);
